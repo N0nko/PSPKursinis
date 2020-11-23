@@ -44,9 +44,9 @@ namespace _2050
 
     public partial class Form1 : Form
     {
-        public int[,] map = new int[4, 4];
+        public int[,] board = new int[4, 4];
         public Label[,] labels = new Label[4, 4];
-        public PictureBox[,] pics = new PictureBox[4, 4];
+        public PictureBox[,] background = new PictureBox[4, 4];
         List<Cell> cells = new List<Cell>();
         Size cellSize;
         Label scoreLabel;
@@ -54,10 +54,10 @@ namespace _2050
 
         //ui settings
         public int blockSize = 50;
-        public int blockOffset = 6;
+        public int blockOffset = 5;
 
-        public int initialOffsetX = 13;
-        public int initialOffsetY = 73;
+        public int initialOffsetX = 20;
+        public int initialOffsetY = 80;
 
         Label label1;
         PictureBox labelBox;
@@ -88,18 +88,7 @@ namespace _2050
 
 
 
-        void ChangeColor(int sum, int i, int j)
-        {
-            if (sum % (faceVariable * Math.Pow(2, 10)) == 0) pics[i, j].BackColor = Color.FromArgb(252, 132, 3);
-            else if (sum % (faceVariable * Math.Pow(2, 9)) == 0) pics[i, j].BackColor = Color.FromArgb(252, 190, 3);
-            else if (sum % (faceVariable * Math.Pow(2, 8)) == 0) pics[i, j].BackColor = Color.FromArgb(252, 211, 3);
-            else if (sum % (faceVariable * Math.Pow(2, 7)) == 0) pics[i, j].BackColor = Color.FromArgb(252, 252, 3);
-            else if (sum % (faceVariable * Math.Pow(2, 6)) == 0) pics[i, j].BackColor = Color.FromArgb(232, 252, 3);
-            else if (sum % (faceVariable * Math.Pow(2, 5)) == 0) pics[i, j].BackColor = Color.FromArgb(246, 94, 59);
-            else if (sum % (faceVariable * Math.Pow(2, 4)) == 0) pics[i, j].BackColor = Color.FromArgb(245, 149, 99);
-            else if (sum % (faceVariable * Math.Pow(2, 3)) == 0) pics[i, j].BackColor = Color.FromArgb(242, 177, 121);
-            else pics[i, j].BackColor = Color.FromArgb(237, 224, 200);
-        }
+        
 
         void CreateScoreText()
         {
@@ -148,12 +137,14 @@ namespace _2050
             Random rng = new Random();
             int a = rng.Next(0, cellMatrixCount);
             int b = rng.Next(0, cellMatrixCount);
-            //int c = rng.Next(0, 1);
+        
 
-            while (pics[a, b] != null)
+            //sticks on full board
+            while (background[a, b] != null)
             {
                 a = rng.Next(0, cellMatrixCount);
                 b = rng.Next(0, cellMatrixCount);
+
             }
 
             CreateStartingBlock(a, b, b * (blockSize + blockOffset), a * (blockSize + blockOffset));
@@ -162,36 +153,49 @@ namespace _2050
         void CreateStartingBlock(int i, int j, int offsetX, int offsetY)
         {
 
-            map[i, j] = 1;
+            board[i, j] = 1;
 
-            pics[i, j] = new PictureBox();
+            background[i, j] = new PictureBox();
             labels[i, j] = new Label();
             labels[i, j].Text = faceVariable.ToString();
             labels[i, j].Size = cellSize;
             labels[i, j].TextAlign = ContentAlignment.MiddleCenter;
-            pics[i, j].Controls.Add(labels[i, j]);
-            pics[i, j].Location = new Point(initialOffsetX + offsetX, initialOffsetY + offsetY);
-            pics[i, j].Size = cellSize;
-            pics[i, j].BackColor = Color.FromArgb(238, 228, 218);
-            this.Controls.Add(pics[i, j]);
-            pics[i, j].BringToFront();
+            background[i, j].Controls.Add(labels[i, j]);
+            background[i, j].Location = new Point(initialOffsetX + offsetX, initialOffsetY + offsetY);
+            background[i, j].Size = cellSize;
+            background[i, j].BackColor = Color.FromArgb(238, 228, 218);
+            this.Controls.Add(background[i, j]);
+            background[i, j].BringToFront();
 
 
+        }
+
+        void ColorSum(int sum, int i, int j)
+        {
+            if (sum % (faceVariable * Math.Pow(2, 10)) == 0) background[i, j].BackColor = Color.FromArgb(252, 132, 3);
+            else if (sum % (faceVariable * Math.Pow(2, 9)) == 0) background[i, j].BackColor = Color.FromArgb(252, 190, 3);
+            else if (sum % (faceVariable * Math.Pow(2, 8)) == 0) background[i, j].BackColor = Color.FromArgb(252, 211, 3);
+            else if (sum % (faceVariable * Math.Pow(2, 7)) == 0) background[i, j].BackColor = Color.FromArgb(252, 252, 3);
+            else if (sum % (faceVariable * Math.Pow(2, 6)) == 0) background[i, j].BackColor = Color.FromArgb(232, 252, 3);
+            else if (sum % (faceVariable * Math.Pow(2, 5)) == 0) background[i, j].BackColor = Color.FromArgb(246, 94, 59);
+            else if (sum % (faceVariable * Math.Pow(2, 4)) == 0) background[i, j].BackColor = Color.FromArgb(245, 149, 99);
+            else if (sum % (faceVariable * Math.Pow(2, 3)) == 0) background[i, j].BackColor = Color.FromArgb(242, 177, 121);
+            else background[i, j].BackColor = Color.FromArgb(237, 224, 200);
         }
 
         void MoveBlocks(int i, int j, int dirH, int dirV)
         {
 
-            if (map[i, j] == 0)
+            if (board[i, j] == 0)
             {
 
-                map[i + (1 * dirV), j + (1 * dirH)] = 0;
-                map[i, j] = 1;
-                pics[i, j] = pics[i + (1 * dirV), j + (1 * dirH)];
-                pics[i + (1 * dirV), j + (1 * dirH)] = null;
+                board[i + (1 * dirV), j + (1 * dirH)] = 0;
+                board[i, j] = 1;
+                background[i, j] = background[i + (1 * dirV), j + (1 * dirH)];
+                background[i + (1 * dirV), j + (1 * dirH)] = null;
                 labels[i, j] = labels[i + (1 * dirV), j + (1 * dirH)];
                 labels[i + (1 * dirV), j + 1 * dirH] = null;
-                pics[i, j].Location = new Point(pics[i, j].Location.X - ((blockSize + blockOffset) * dirH), pics[i, j].Location.Y - ((blockSize + blockOffset) * dirV));
+                background[i, j].Location = new Point(background[i, j].Location.X - ((blockSize + blockOffset) * dirH), background[i, j].Location.Y - ((blockSize + blockOffset) * dirV));
 
             }
             else
@@ -203,12 +207,12 @@ namespace _2050
 
                     labels[i, j].Text = (a + b).ToString();
                     score += (a + b);
-                    ChangeColor(a + b, i, j);
+                    ColorSum(a + b, i, j);
                     label1.Text = "Score: " + score;
-                    map[i + (1 * dirV), j + (1 * dirH)] = 0;
-                    this.Controls.Remove(pics[i + (1 * dirV), j + (1 * dirH)]);
+                    board[i + (1 * dirV), j + (1 * dirH)] = 0;
+                    this.Controls.Remove(background[i + (1 * dirV), j + (1 * dirH)]);
                     this.Controls.Remove(labels[i + (1 * dirV), j + (1 * dirH)]);
-                    pics[i + (1 * dirV), j + (1 * dirH)] = null;
+                    background[i + (1 * dirV), j + (1 * dirH)] = null;
                     labels[i + (1 * dirV), j + (1 * dirH)] = null;
 
                 }
@@ -217,11 +221,11 @@ namespace _2050
 
         }
 
-        private void OnKeyDown(object sender, KeyEventArgs e)
+        private void OnKeyDown(object sender, KeyEventArgs keyPress)
         {
             bool blockMoved = false;
 
-            switch (e.KeyCode.ToString())
+            switch (keyPress.KeyCode.ToString())
             {
                 case "Right":
                     for (int i = 0; i < cellMatrixCount; i++)
@@ -229,7 +233,7 @@ namespace _2050
                         for (int l = cellMatrixCount - 2; l >= 0; l--)
                         {
 
-                            if (map[i, l] == 1)
+                            if (board[i, l] == 1)
                             {
                                 for (int j = l + 1; j < cellMatrixCount; j++)
                                 {
@@ -247,7 +251,7 @@ namespace _2050
                     {
                         for (int l = 1; l < cellMatrixCount; l++)
                         {
-                            if (map[i, l] == 1)
+                            if (board[i, l] == 1)
                             {
                                 for (int j = l - 1; j >= 0; j--)
                                 {
@@ -264,7 +268,7 @@ namespace _2050
                     {
                         for (int l = 0; l < cellMatrixCount; l++)
                         {
-                            if (map[i, l] == 1)
+                            if (board[i, l] == 1)
                             {
                                 for (int j = i + 1; j < cellMatrixCount; j++)
                                 {
@@ -281,7 +285,7 @@ namespace _2050
                     {
                         for (int l = 0; l < cellMatrixCount; l++)
                         {
-                            if (map[i, l] == 1)
+                            if (board[i, l] == 1)
                             {
                                 for (int j = i - 1; j >= 0; j--)
                                 {
