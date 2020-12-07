@@ -7,3 +7,4 @@ C:\Users\Matas\source\repos\2050\2050\obj\Debug\2050.csproj.GenerateResource.cac
 C:\Users\Matas\source\repos\2050\2050\obj\Debug\2050.csproj.CoreCompileInputs.cache
 C:\Users\Matas\source\repos\2050\2050\obj\Debug\2050.exe
 C:\Users\Matas\source\repos\2050\2050\obj\Debug\2050.pdb
+C:\Users\Matas\source\repos\2050\2050\obj\Debug\_2050.Board.resources

@@ -10,297 +10,372 @@ using System.Windows.Forms;
 
 namespace _2050
 {
-    class Cell
+    public class Board : Form
     {
+        public int[,] board;
+        public Cell[,] cells;
 
-        Point position;
-        Size size;
-
-        int itemID, itemValue;
-        private Label itemLabel;
-        private PictureBox itemImage;
-
-        //transform
-        public Point Position { get => position; set => position = value; }
-        public Size Size { get => size; set => size = value; }
-        //game values
-        public int ItemID { get => itemID; set => itemID = value; }
-        public int ItemValue { get => itemValue; set => itemValue = value; }
-        public Label ItemLabel { get => itemLabel; set => itemLabel = value; }
-        public PictureBox ItemImage { get => itemImage; set => itemImage = value; }
-
-
-
-        public void CreateCell(Point pos, Size dims, int id, PictureBox image)
-        {
-            Position = pos;
-            Size = dims;
-            ItemID = id;
-            ItemImage = image;
-
-        }
-
-    }
-
-    public partial class Form1 : Form
-    {
-        public int[,] board = new int[4, 4];
-        public Label[,] labels = new Label[4, 4];
-        public PictureBox[,] background = new PictureBox[4, 4];
-        List<Cell> cells = new List<Cell>();
+        int blockSize;
+        int blockOffset;
+        int cellMatrixCount;
+        int initialOffsetX;
+        int initialOffsetY;
+        int faceVariable;
+        int score;
         Size cellSize;
-        Label scoreLabel;
-        int score = 0;
-
-        //ui settings
-        public int blockSize = 50;
-        public int blockOffset = 5;
-
-        public int initialOffsetX = 20;
-        public int initialOffsetY = 80;
 
         Label label1;
         PictureBox labelBox;
+        Label scoreLabel;
 
+        public int BlockSize { get => blockSize; set => blockSize = value; }
+        public int BlockOffset { get => blockOffset; set => blockOffset = value; }
+        public int CellMatrixCount { get => cellMatrixCount; set => cellMatrixCount = value; }
+        public int InitialOffsetX { get => initialOffsetX; set => initialOffsetX = value; }
+        public int InitialOffsetY { get => initialOffsetY; set => initialOffsetY = value; }
+        public Size CellSize { get => cellSize; set => cellSize = value; }
 
-        //game settings
-        int cellMatrixCount = 4;
-        int faceVariable = 2;
+        public int FaceVariable { get => faceVariable; set => faceVariable = value; }
+        public int Score { get => score; set => score = value; }
+        public Label Label1 { get => label1; set => label1 = value; }
+        public PictureBox LabelBox { get => labelBox; set => labelBox = value; }
+        public Label ScoreLabel { get => scoreLabel; set => scoreLabel = value; }
 
-        public Form1()
+        public void InitBoard(int cellMatrixCount, int blockSize, int blockOffset, int initialOffsetX, int initialOffsetY, int faceVariable)
         {
+            CellMatrixCount = cellMatrixCount;
+            BlockSize = blockSize;
+            BlockOffset = blockOffset;
+            InitialOffsetX = initialOffsetX;
+            InitialOffsetY = initialOffsetY;
+            CellSize = cellSize;
+
+            faceVariable = FaceVariable;
+            Score = 0;
+
             cellSize = new Size(blockSize, blockSize);
-            int[,] map = new int[faceVariable, faceVariable];
-            Label[,] labels = new Label[faceVariable, faceVariable];
-            PictureBox[,] pics = new PictureBox[faceVariable, faceVariable];
+            cells = new Cell[CellMatrixCount, CellMatrixCount];
+            board = new int[CellMatrixCount, CellMatrixCount];
 
-            InitializeComponent();
-            KeyDown += new KeyEventHandler(OnKeyDown);
 
-            CreateMap();
+        }
+    }
 
-            CreateScoreText();
+    public class BoardInteractions : Board {
 
-            CreateStartingBlock(0, 0, 0, 0);
-            CreateStartingBlock(0, 1, blockSize + blockOffset, 0);
+        public void CreateScoreText()
+        {
+            ScoreLabel = new Label();
+            ScoreLabel.Location = new Point(0, 20);
+
+            LabelBox = new PictureBox();
+            Label1 = new Label();
+            Label1.Text = "Score: 0";
+            Label1.Size = new Size(100, 15);
+
+            Label1.TextAlign = ContentAlignment.BottomLeft;
+            LabelBox.Controls.Add(Label1);
+            LabelBox.Location = new Point(20, 10);
+            LabelBox.Size = new Size(100, 25);
+            LabelBox.BackColor = Color.FromArgb(238, 228, 218);
+            Controls.Add(LabelBox);
 
         }
 
-
-
-        
-
-        void CreateScoreText()
+        public void CreateMap()
         {
-            labelBox = new PictureBox();
-            label1 = new Label();
-            label1.Text = "Score: 0";
-            label1.Size = new Size(100, 15);
-         
-            label1.TextAlign = ContentAlignment.BottomLeft;
-            labelBox.Controls.Add(label1);
-            labelBox.Location = new Point(20, 10);
-            labelBox.Size = new Size(100, 25); 
-            labelBox.BackColor = Color.FromArgb(238, 228, 218);
-            this.Controls.Add(labelBox);
 
-        }
-
-
-        List<PictureBox> CreateMap()
-        {
-            List<PictureBox> pictureBoxes = new List<PictureBox>();
-            scoreLabel = new Label();
-            scoreLabel.Location = new Point(0, 20);
-            
-            for (int i = 0; i < cellMatrixCount; i++)
-                for (int j = 0; j < cellMatrixCount; j++)
+            for (int i = 0; i < CellMatrixCount; i++)
+                for (int j = 0; j < CellMatrixCount; j++)
                 {
-                    //transform
-                    Point cellPos = new Point(initialOffsetX + (blockSize + blockOffset) * j, initialOffsetY + (blockSize + blockOffset) * i);
-                    PictureBox emptyCell = new PictureBox();
 
-                    emptyCell.Location = cellPos;
-                    emptyCell.Size = cellSize;
-                    emptyCell.BackColor = Color.FromArgb(204, 192, 179);
+                    Point cellPos = new Point(InitialOffsetX + (BlockSize + BlockOffset) * j, InitialOffsetY + (BlockSize + BlockOffset) * i);
 
-                    this.Controls.Add(emptyCell);
+                    cells[i, j] = new EmptyCell();
+                    cells[i, j].CreateCell(cellPos);
 
-                    pictureBoxes.Add(emptyCell);
 
                 }
-            return pictureBoxes;
         }
 
-        void InsertRandomBox()
-        {
-            Random rng = new Random();
-            int a = rng.Next(0, cellMatrixCount);
-            int b = rng.Next(0, cellMatrixCount);
-        
-
-            //sticks on full board
-            while (background[a, b] != null)
-            {
-                a = rng.Next(0, cellMatrixCount);
-                b = rng.Next(0, cellMatrixCount);
-
-            }
-
-            CreateStartingBlock(a, b, b * (blockSize + blockOffset), a * (blockSize + blockOffset));
-        }
-
-        void CreateStartingBlock(int i, int j, int offsetX, int offsetY)
+        public void MoveBlocks(int i, int j, int dirH, int dirV)
         {
 
-            board[i, j] = 1;
-
-            background[i, j] = new PictureBox();
-            labels[i, j] = new Label();
-            labels[i, j].Text = faceVariable.ToString();
-            labels[i, j].Size = cellSize;
-            labels[i, j].TextAlign = ContentAlignment.MiddleCenter;
-            background[i, j].Controls.Add(labels[i, j]);
-            background[i, j].Location = new Point(initialOffsetX + offsetX, initialOffsetY + offsetY);
-            background[i, j].Size = cellSize;
-            background[i, j].BackColor = Color.FromArgb(238, 228, 218);
-            this.Controls.Add(background[i, j]);
-            background[i, j].BringToFront();
-
-
-        }
-
-        void ColorSum(int sum, int i, int j)
-        {
-            if (sum % (faceVariable * Math.Pow(2, 10)) == 0) background[i, j].BackColor = Color.FromArgb(252, 132, 3);
-            else if (sum % (faceVariable * Math.Pow(2, 9)) == 0) background[i, j].BackColor = Color.FromArgb(252, 190, 3);
-            else if (sum % (faceVariable * Math.Pow(2, 8)) == 0) background[i, j].BackColor = Color.FromArgb(252, 211, 3);
-            else if (sum % (faceVariable * Math.Pow(2, 7)) == 0) background[i, j].BackColor = Color.FromArgb(252, 252, 3);
-            else if (sum % (faceVariable * Math.Pow(2, 6)) == 0) background[i, j].BackColor = Color.FromArgb(232, 252, 3);
-            else if (sum % (faceVariable * Math.Pow(2, 5)) == 0) background[i, j].BackColor = Color.FromArgb(246, 94, 59);
-            else if (sum % (faceVariable * Math.Pow(2, 4)) == 0) background[i, j].BackColor = Color.FromArgb(245, 149, 99);
-            else if (sum % (faceVariable * Math.Pow(2, 3)) == 0) background[i, j].BackColor = Color.FromArgb(242, 177, 121);
-            else background[i, j].BackColor = Color.FromArgb(237, 224, 200);
-        }
-
-        void MoveBlocks(int i, int j, int dirH, int dirV)
-        {
+            Cell thisCell = cells[i, j];
+            Cell thatCell = cells[i + (1 * dirV), j + (1 * dirH)];
 
             if (board[i, j] == 0)
             {
 
                 board[i + (1 * dirV), j + (1 * dirH)] = 0;
                 board[i, j] = 1;
-                background[i, j] = background[i + (1 * dirV), j + (1 * dirH)];
-                background[i + (1 * dirV), j + (1 * dirH)] = null;
-                labels[i, j] = labels[i + (1 * dirV), j + (1 * dirH)];
-                labels[i + (1 * dirV), j + 1 * dirH] = null;
-                background[i, j].Location = new Point(background[i, j].Location.X - ((blockSize + blockOffset) * dirH), background[i, j].Location.Y - ((blockSize + blockOffset) * dirV));
 
+
+                thisCell.ItemImage = thatCell.ItemImage;
+                thatCell.ItemImage = null;
+
+                thisCell.ItemLabel = thatCell.ItemLabel;
+                thatCell.ItemLabel = null;
+                thisCell.ItemImage.Location = new Point(thisCell.ItemImage.Location.X - ((BlockSize + BlockOffset) * dirH), thisCell.ItemImage.Location.Y - ((BlockSize + BlockOffset) * dirV));
             }
             else
             {
-                int a = int.Parse(labels[i, j].Text);
-                int b = int.Parse(labels[i + (1 * dirV), j + (1 * dirH)].Text);
+
+                int a = int.Parse(thisCell.ItemLabel.Text);
+                int b = int.Parse(thatCell.ItemLabel.Text);
                 if (a == b)
                 {
 
-                    labels[i, j].Text = (a + b).ToString();
-                    score += (a + b);
-                    ColorSum(a + b, i, j);
-                    label1.Text = "Score: " + score;
+                    thisCell.ItemLabel.Text = (a + b).ToString();
+                    Score += (a + b);
+                    thisCell.ColorSum(a + b, FaceVariable);
+                    Label1.Text = "Score: " + Score;
                     board[i + (1 * dirV), j + (1 * dirH)] = 0;
-                    this.Controls.Remove(background[i + (1 * dirV), j + (1 * dirH)]);
-                    this.Controls.Remove(labels[i + (1 * dirV), j + (1 * dirH)]);
-                    background[i + (1 * dirV), j + (1 * dirH)] = null;
-                    labels[i + (1 * dirV), j + (1 * dirH)] = null;
+                    Controls.Remove(thatCell.ItemImage);
+                    Controls.Remove(thatCell.ItemLabel);
+                    thatCell.ItemImage = null;
+                    thatCell.ItemLabel = null;
 
                 }
             }
 
-
         }
 
-        private void OnKeyDown(object sender, KeyEventArgs keyPress)
+    }
+
+        public abstract class Cell : Board
         {
-            bool blockMoved = false;
+            private Label itemLabel;
+            private PictureBox itemImage;
 
-            switch (keyPress.KeyCode.ToString())
+
+            public Label ItemLabel { get => itemLabel; set => itemLabel = value; }
+            public PictureBox ItemImage { get => itemImage; set => itemImage = value; }
+
+            public abstract void CreateCell(Point cellPos);
+            public abstract void CreateCell(int offsetX, int offsetY);
+
+
+            public void ColorSum(int sum, int faceVariable)
             {
-                case "Right":
-                    for (int i = 0; i < cellMatrixCount; i++)
-                    {
-                        for (int l = cellMatrixCount - 2; l >= 0; l--)
-                        {
+                if (sum % (faceVariable * Math.Pow(2, 10)) == 0) ItemImage.BackColor = Color.FromArgb(252, 132, 3);
+                else if (sum % (faceVariable * Math.Pow(2, 9)) == 0) ItemImage.BackColor = Color.FromArgb(252, 190, 3);
+                else if (sum % (faceVariable * Math.Pow(2, 8)) == 0) ItemImage.BackColor = Color.FromArgb(252, 211, 3);
+                else if (sum % (faceVariable * Math.Pow(2, 7)) == 0) ItemImage.BackColor = Color.FromArgb(252, 252, 3);
+                else if (sum % (faceVariable * Math.Pow(2, 6)) == 0) ItemImage.BackColor = Color.FromArgb(232, 252, 3);
+                else if (sum % (faceVariable * Math.Pow(2, 5)) == 0) ItemImage.BackColor = Color.FromArgb(246, 94, 59);
+                else if (sum % (faceVariable * Math.Pow(2, 4)) == 0) ItemImage.BackColor = Color.FromArgb(245, 149, 99);
+                else if (sum % (faceVariable * Math.Pow(2, 3)) == 0) ItemImage.BackColor = Color.FromArgb(242, 177, 121);
+                else ItemImage.BackColor = Color.FromArgb(237, 224, 200);
+            }
+        }
 
-                            if (board[i, l] == 1)
-                            {
-                                for (int j = l + 1; j < cellMatrixCount; j++)
-                                {
-                                    MoveBlocks(i, j, -1, 0);
-                                    blockMoved = true;
+        public class EmptyCell : Cell
+        {
 
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case "Left":
-
-                    for (int i = 0; i < cellMatrixCount; i++)
-                    {
-                        for (int l = 1; l < cellMatrixCount; l++)
-                        {
-                            if (board[i, l] == 1)
-                            {
-                                for (int j = l - 1; j >= 0; j--)
-                                {
-                                    MoveBlocks(i, j, 1, 0);
-                                    blockMoved = true;
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case "Down":
-
-                    for (int i = cellMatrixCount - 2; i >= 0; i--)
-                    {
-                        for (int l = 0; l < cellMatrixCount; l++)
-                        {
-                            if (board[i, l] == 1)
-                            {
-                                for (int j = i + 1; j < cellMatrixCount; j++)
-                                {
-                                    MoveBlocks(j, l, 0, -1);
-                                    blockMoved = true;
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case "Up":
-
-                    for (int i = 1; i < cellMatrixCount; i++)
-                    {
-                        for (int l = 0; l < cellMatrixCount; l++)
-                        {
-                            if (board[i, l] == 1)
-                            {
-                                for (int j = i - 1; j >= 0; j--)
-                                {
-                                    MoveBlocks(j, l, 0, 1);
-                                    blockMoved = true;
-                                }
-                            }
-                        }
-                    }
-                    break;
+            public override void CreateCell(Point cellPos)
+            {
+                ItemImage = new PictureBox
+                {
+                    Location = cellPos,
+                    Size = CellSize,
+                    BackColor = Color.FromArgb(204, 192, 179)
+                };
+                Controls.Add(ItemImage);
 
             }
-            if (blockMoved)
-                InsertRandomBox();
 
+            public override void CreateCell(int offsetX, int offsetY)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public class Block : Cell
+        {
+            public override void CreateCell(int offsetX, int offsetY)
+            {
+
+                ItemLabel = new Label
+                {
+                    Text = FaceVariable.ToString(),
+                    Size = CellSize,
+                    TextAlign = ContentAlignment.MiddleCenter
+                };
+
+                ItemImage = new PictureBox
+                {
+
+                    Location = new Point(InitialOffsetX + offsetX, InitialOffsetY + offsetY),
+                    Size = CellSize,
+                    BackColor = Color.FromArgb(238, 228, 218),
+
+                };
+
+                ItemImage.Controls.Add(ItemLabel);
+
+                Controls.Add(ItemImage);
+
+                ItemImage.BringToFront();
+
+            }
+
+            public override void CreateCell(Point cellPos)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+
+        public partial class Form1 : Form
+        {
+
+            BoardInteractions GameBoard;
+
+            //ui settings
+            public int blockSize = 50;
+            public int blockOffset = 5;
+
+            public int initialOffsetX = 20;
+            public int initialOffsetY = 80;
+
+            //game settings
+            int cellMatrixCount = 4;
+            int faceVariable = 2;
+
+            public Form1()
+            {
+                InitializeComponent();
+
+                KeyDown += new KeyEventHandler(OnKeyDown);
+
+                GameBoard = new BoardInteractions();
+
+                GameBoard.InitBoard(cellMatrixCount, blockSize, blockOffset, initialOffsetX, initialOffsetY, faceVariable);
+
+                GameBoard.CreateScoreText();
+
+                GameBoard.CreateMap();
+
+               // GameBoard.CreateControl();
+               // GameBoard.CreateGraphics();
+               // GameBoard.BringToFront();
+               //UpdateTable();
+
+                InsertRandomBox(GameBoard.cells);
+
+            }
+            void UpdateTable()
+            {
+
+                foreach (Cell cell in GameBoard.cells)
+                {
+                    cell.ItemImage.BringToFront();
+                    Controls.Add(cell.ItemImage);
+
+                }
+            }
+            public void InsertRandomBox(Cell[,] cells)
+            {
+                Random rng = new Random();
+                int a = rng.Next(0, cellMatrixCount);
+                int b = rng.Next(0, cellMatrixCount);
+
+                int loopsPassed = 0;
+
+                while (GameBoard.cells[a, b].ItemImage != null)
+                {
+                    a = rng.Next(0, cellMatrixCount);
+                    b = rng.Next(0, cellMatrixCount);
+                    loopsPassed++;
+                    if (loopsPassed > cellMatrixCount * cellMatrixCount)
+                        return;
+                }
+                GameBoard.board[a, b] = 1;
+                GameBoard.cells[a, b].CreateCell(b * (blockSize + blockOffset), a * (blockSize + blockOffset));
+
+            }
+
+            private void OnKeyDown(object sender, KeyEventArgs keyPress)
+            {
+                bool blockMoved = false;
+
+                switch (keyPress.KeyCode.ToString())
+                {
+                    case "Right":
+                        for (int i = 0; i < cellMatrixCount; i++)
+                        {
+                            for (int l = cellMatrixCount - 2; l >= 0; l--)
+                            {
+
+                                if (GameBoard.board[i, l] == 1)
+                                {
+                                    for (int j = l + 1; j < cellMatrixCount; j++)
+                                    {
+                                        GameBoard.MoveBlocks(i, j, -1, 0);
+                                        blockMoved = true;
+
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case "Left":
+
+                        for (int i = 0; i < cellMatrixCount; i++)
+                        {
+                            for (int l = 1; l < cellMatrixCount; l++)
+                            {
+                                if (GameBoard.board[i, l] == 1)
+                                {
+                                    for (int j = l - 1; j >= 0; j--)
+                                    {
+                                        GameBoard.MoveBlocks(i, j, 1, 0);
+                                        blockMoved = true;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case "Down":
+
+                        for (int i = cellMatrixCount - 2; i >= 0; i--)
+                        {
+                            for (int l = 0; l < cellMatrixCount; l++)
+                            {
+                                if (GameBoard.board[i, l] == 1)
+                                {
+                                    for (int j = i + 1; j < cellMatrixCount; j++)
+                                    {
+                                        GameBoard.MoveBlocks(j, l, 0, -1);
+                                        blockMoved = true;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case "Up":
+
+                        for (int i = 1; i < cellMatrixCount; i++)
+                        {
+                            for (int l = 0; l < cellMatrixCount; l++)
+                            {
+                                if (GameBoard.board[i, l] == 1)
+                                {
+                                    for (int j = i - 1; j >= 0; j--)
+                                    {
+                                        GameBoard.MoveBlocks(j, l, 0, 1);
+                                        blockMoved = true;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+
+                }
+                if (blockMoved)
+                    InsertRandomBox(GameBoard.cells);
+
+            }
         }
     }
-}
